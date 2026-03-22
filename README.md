@@ -214,3 +214,23 @@ Then show me:
 ```
 
 </details>
+
+### MEM-05: Split conversations into threads so context stops bleeding across topics
+
+One long OpenClaw conversation turns into a junk drawer. Coding, research, admin, and random questions all get mixed together, and every new turn drags that baggage forward.
+
+OpenClaw already has session boundaries you can use. Group chats isolate state by group. Telegram forum topics get their own `:topic:<threadId>` session keys. Slack and Discord threads are treated as thread sessions. Discord channels also get their own isolated sessions.
+
+That means the practical fix is simple: split work by topic or channel. Keep one thread for coding, another for research, another for admin, another for personal operations. Focused threads give the agent focused context instead of one huge mixed transcript.
+
+This is one of the easiest memory fixes because it does not require a new memory system. It just uses OpenClaw's existing session isolation properly.
+
+For Telegram specifically, BotFather has a setting for this now. Open BotFather, choose your bot from **My bots**, go to **Bot Settings**, and turn on **Threaded Mode**.
+
+<p align="center">
+  <img src="./tips/mem-05/telegram-1.png" alt="Open BotFather and choose your bot from My bots" width="30%" />
+  <img src="./tips/mem-05/telegram-2.png" alt="Enable Threaded Mode in Bot Settings" width="30%" />
+  <img src="./tips/mem-05/telegram-3.png" alt="Telegram chat using separate topic tabs" width="34%" />
+</p>
+
+Once it is enabled, Telegram gives the bot separate tabs/topics in the chat UI. That is exactly what this tip needs - coding in one topic, research in another, admin in another - instead of one mixed transcript where everything contaminates everything else.
