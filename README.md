@@ -173,3 +173,43 @@ Then show me:
 ```
 
 </details>
+
+### MEM-04: Treat chat history as cache, not the source of truth
+
+If you want OpenClaw to remember things reliably, write them to the files OpenClaw already knows how to use. Transcript memory is fragile. Compaction, resets, and long idle gaps all make chat a bad place to keep anything important.
+
+OpenClaw already has a real file pattern for this:
+
+- `MEMORY.md` - durable facts, preferences, decisions
+- `memory/YYYY-MM-DD.md` - daily notes and running context
+- `AGENTS.md` - standing rules for how the agent should use those files
+
+That is the practical version of "chat is cache". Important facts belong in `MEMORY.md`. Short-term working context belongs in daily memory files. `AGENTS.md` should tell the agent to read and update them instead of trusting the transcript to carry everything forward.
+
+If task state matters too, put that in an actual task system or another durable store you already use. The rule is the same: if losing the transcript would break the workflow, the state is in the wrong place.
+
+<details>
+<summary><strong>Copy prompt - implement this tip for me</strong></summary>
+
+```md
+Refactor my OpenClaw setup so durable state lives in OpenClaw memory files instead of relying on chat history.
+
+Do all of the following:
+
+1. Inspect my current setup and identify what important state currently depends too much on chat history.
+2. Move durable facts, preferences, and decisions into `MEMORY.md`.
+3. Move short-term running context into `memory/YYYY-MM-DD.md`.
+4. Update `AGENTS.md` so the agent reads and maintains those files instead of relying on transcript memory.
+5. If I already have a memory system, merge carefully instead of creating duplicates.
+6. If task state belongs in another durable system I already use, keep it there and document that clearly instead of inventing a second task system.
+7. Keep the setup aligned with normal OpenClaw workspace conventions.
+
+Then show me:
+- what state used to live mostly in chat
+- what you wrote to `MEMORY.md`
+- what you wrote to `memory/YYYY-MM-DD.md`
+- what you changed in `AGENTS.md`
+- any parts that still depend on transcript history
+```
+
+</details>
