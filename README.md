@@ -351,3 +351,69 @@ Then show me:
 ```
 
 </details>
+
+### MEM-08: Periodically self-clean memory instead of letting it rot forever
+
+Memory quality depends on what gets removed as much as what gets added.
+
+Over time, `MEMORY.md` collects duplicates, stale facts, old preferences, and contradictions. OpenClaw's own template guidance already suggests a maintenance pass every few days: read recent `memory/YYYY-MM-DD.md` files, keep the significant lessons, update `MEMORY.md`, and remove outdated information that is no longer true.
+
+That is the right mental model. Daily memory files are raw notes. `MEMORY.md` is curated wisdom. If everything stays forever, retrieval gets noisier and the model starts pulling stale context back into live work.
+
+The fix is simple: review memory periodically, merge duplicates, resolve contradictions, remove outdated facts, and keep `MEMORY.md` focused on what is still worth knowing.
+
+For example, this is the maintenance loop the docs recommend:
+
+```md
+1. Read through recent `memory/YYYY-MM-DD.md` files
+2. Identify significant events, lessons, or insights worth keeping long-term
+3. Update `MEMORY.md` with distilled learnings
+4. Remove outdated info from `MEMORY.md` that's no longer relevant
+```
+
+For this one, heartbeat is usually the best fit. OpenClaw's own template puts memory maintenance under heartbeats, which makes sense: it is periodic background awareness, not a precise standalone job.
+
+That can be as simple as adding a maintenance rule like this to `HEARTBEAT.md`:
+
+```md
+Every few days:
+- Read recent `memory/YYYY-MM-DD.md` files
+- Promote durable lessons to `MEMORY.md`
+- Remove outdated entries from `MEMORY.md`
+- Reply `NO_REPLY` if nothing needs updating
+```
+
+<p align="center">
+  <img src="./tips/mem-08/heartbeat-memory-maintenance.png" alt="HEARTBEAT.md with a memory maintenance section added" width="100%" />
+</p>
+
+If you want exact timing or a fully isolated cleanup run, a cron job is still fine. But heartbeat is the more natural default for this tip.
+
+Good memory is not just persistent. It is maintained.
+
+<details>
+<summary><strong>Copy prompt - implement this tip for me</strong></summary>
+
+```md
+Set up a practical memory-maintenance workflow for my OpenClaw workspace so `MEMORY.md` stays useful instead of slowly filling with stale facts.
+
+Do all of the following:
+
+1. Review my recent `memory/YYYY-MM-DD.md` files and my current `MEMORY.md`.
+2. Identify duplicates, stale facts, contradictions, outdated preferences, and notes that should be promoted from daily memory into long-term memory.
+3. Update `MEMORY.md` so it keeps the durable facts, decisions, preferences, and lessons that still matter.
+4. Remove or rewrite outdated entries in `MEMORY.md` instead of letting conflicting versions pile up.
+5. Add a short memory-maintenance rule to `HEARTBEAT.md` so this gets reviewed periodically in the normal heartbeat flow.
+6. If heartbeat is not the right fit for my setup, explain why and suggest a dedicated cron instead.
+7. Keep the process aligned with normal OpenClaw memory conventions: daily files are raw notes, `MEMORY.md` is curated memory.
+
+Then show me:
+- what you reviewed
+- what you added to `MEMORY.md`
+- what you removed or rewrote
+- any contradictions or stale entries you found
+- the exact `HEARTBEAT.md` rule you added
+- whether you used heartbeat or recommended cron instead
+```
+
+</details>
