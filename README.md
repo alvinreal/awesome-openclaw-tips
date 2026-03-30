@@ -1,81 +1,106 @@
 <div align="center">
-<img src="./assets/cover.png" alt="OpenClaw Tips cover" width="15%" />
 
 # Awesome OpenClaw Tips
-<p>
-  <a href="https://www.reddit.com/r/OpenClaw_Tips/">
-    <img src="https://img.shields.io/badge/Subreddit-r%2FOpenClaw__Tips-FF4500?logo=reddit&logoColor=white" alt="Subreddit: r/OpenClaw_Tips" />
+
+*Practical tips and copy-paste prompts for running OpenClaw agents in production.*
+
+<p align="center">
+  <a href="https://boringdystopia.ai/">
+    <img src="https://img.shields.io/badge/boringdystopia.ai-111111?style=for-the-badge&logo=vercel&logoColor=white" alt="boringdystopia.ai" />
+  </a>&nbsp;
+  <a href="https://x.com/alvinunreal">
+    <img src="https://img.shields.io/badge/X-@alvinunreal-000000?style=for-the-badge&logo=x&logoColor=white" alt="X @alvinunreal" />
+  </a>&nbsp;
+  <a href="https://t.me/boringdystopiadevelopment">
+    <img src="https://img.shields.io/badge/Telegram-Join%20channel-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white" alt="Telegram Join channel" />
   </a>
 </p>
-<br />
-<strong>The practical playbook for turning OpenClaw from a fun chatbot into a reliable operating system for recurring work.</strong>
-<p>These tips were gathered from hands-on use, docs, community setups, and repo deep-dives; see <a href="#acknowledgements">Acknowledgements</a>.</p>
+
 </div>
 
 ## Table of Contents
 
-- [💬 Messages](#messages)
-  - [MES-01: Enable ack reactions by setting messages.ackReactionScope](#mes-01-enable-ack-reactions-by-setting-messagesackreactionscope)
-- [📨 Telegram](#telegram)
-  - [TEL-01: Use Telegram inline buttons for recurring actions](#tel-01-use-telegram-inline-buttons-for-recurring-actions)
-- [🧠 Memory](#memory)
-  - [MEM-01: Make your agent learn from its mistakes](#mem-01-make-your-agent-learn-from-its-mistakes)
-  - [MEM-02: Flush important state before compaction eats it](#mem-02-flush-important-state-before-compaction-eats-it)
-  - [MEM-03: Use SQLite memory search before you pay for embeddings](#mem-03-use-sqlite-memory-search-before-you-pay-for-embeddings)
-  - [MEM-04: Treat chat history as cache, not the source of truth](#mem-04-treat-chat-history-as-cache-not-the-source-of-truth)
-  - [MEM-05: Split conversations into threads so context stops bleeding across topics](#mem-05-split-conversations-into-threads-so-context-stops-bleeding-across-topics)
-  - [MEM-06: Make the workspace folder the source of truth and put it under git](#mem-06-make-the-workspace-folder-the-source-of-truth-and-put-it-under-git)
-  - [MEM-07: Back up your workspace continuously, not just once](#mem-07-back-up-your-workspace-continuously-not-just-once)
-  - [MEM-08: Periodically self-clean memory instead of letting it rot forever](#mem-08-periodically-self-clean-memory-instead-of-letting-it-rot-forever)
-- [🛡️ Reliability](#reliability)
-  - [REL-01: Don't put all your fallbacks on the same provider](#rel-01-dont-put-all-your-fallbacks-on-the-same-provider)
-  - [REL-02: Your agent says "done" when it isn't](#rel-02-your-agent-says-done-when-it-isnt)
-  - [REL-03: Use heartbeat to rotate recurring checks, not just repeat one generic check](#rel-03-use-heartbeat-to-rotate-recurring-checks-not-just-repeat-one-generic-check)
-  - [REL-04: Turn on tool-loop detection before a bad run burns hours](#rel-04-turn-on-tool-loop-detection-before-a-bad-run-burns-hours)
-- [💸 Cost](#cost)
-  - [COST-01: Your heartbeat model is costing you more than you think](#cost-01-your-heartbeat-model-is-costing-you-more-than-you-think)
-  - [COST-02: Use cache-ttl pruning or idle sessions will re-cache junk history](#cost-02-use-cache-ttl-pruning-or-idle-sessions-will-re-cache-junk-history)
-  - [COST-03: Local models are often a false economy](#cost-03-local-models-are-often-a-false-economy)
-  - [COST-04: Use local models only for repetitive mechanical work](#cost-04-use-local-models-only-for-repetitive-mechanical-work)
-- [⚙️ Operations](#operations)
-  - [OPS-01: Set explicit concurrency limits for agents and subagents](#ops-01-set-explicit-concurrency-limits-for-agents-and-subagents)
-  - [OPS-02: Learn the slash commands that actually save bad sessions](#ops-02-learn-the-slash-commands-that-actually-save-bad-sessions)
-- [⏱️ Automation](#automation)
-  - [AUTO-01: Standing orders define what, cron defines when](#auto-01-standing-orders-define-what-cron-defines-when)
-  - [AUTO-02: Use isolated cron jobs for noisy chores](#auto-02-use-isolated-cron-jobs-for-noisy-chores)
-- [🏗️ Architecture](#architecture)
-  - [ARCH-01: Stop using one generic agent for everything](#arch-01-stop-using-one-generic-agent-for-everything)
-  - [ARCH-02: Keep your orchestrator as a manager, not the doer](#arch-02-keep-your-orchestrator-as-a-manager-not-the-doer)
-  - [ARCH-03: Give different models different prompt files](#arch-03-give-different-models-different-prompt-files)
-  - [ARCH-04: Predefine subagent workspaces or they lose shared context](#arch-04-predefine-subagent-workspaces-or-they-lose-shared-context)
+* [💬 Messages](#messages)
 
-<a id="messages"></a>
+  * [MES-01: Enable ack reactions by setting messages.ackReactionScope](#mes-01-enable-ack-reactions-by-setting-messagesackreactionscope)
+
+* [📨 Telegram](#telegram)
+
+  * [TEL-01: Use Telegram inline buttons for recurring actions](#tel-01-use-telegram-inline-buttons-for-recurring-actions)
+
+* [🧠 Memory](#memory)
+
+  * [MEM-01: Make your agent learn from its mistakes](#mem-01-make-your-agent-learn-from-its-mistakes)
+
+  * [MEM-02: Flush important state before compaction eats it](#mem-02-flush-important-state-before-compaction-eats-it)
+
+  * [MEM-03: Use SQLite memory search before you pay for embeddings](#mem-03-use-sqlite-memory-search-before-you-pay-for-embeddings)
+
+  * [MEM-04: Treat chat history as cache, not the source of truth](#mem-04-treat-chat-history-as-cache-not-the-source-of-truth)
+
+  * [MEM-05: Split conversations into threads so context stops bleeding across topics](#mem-05-split-conversations-into-threads-so-context-stops-bleeding-across-topics)
+
+  * [MEM-06: Make the workspace folder the source of truth and put it under git](#mem-06-make-the-workspace-folder-the-source-of-truth-and-put-it-under-git)
+
+  * [MEM-07: Back up your workspace continuously, not just once](#mem-07-back-up-your-workspace-continuously-not-just-once)
+
+  * [MEM-08: Periodically self-clean memory instead of letting it rot forever](#mem-08-periodically-self-clean-memory-instead-of-letting-it-rot-forever)
+
+  * [MEM-09: Turn on session memory indexing so memory search can find old conversations](#mem-09-turn-on-session-memory-indexing-so-memory-search-can-find-old-conversations)
+
+* [🔐 Security](#security)
+
+  * [SEC-01: Send exec approval prompts to Telegram or Discord so risky commands never run silently](#sec-01-send-exec-approval-prompts-to-telegram-or-discord-so-risky-commands-never-run-silently)
+
+* [🛡️ Reliability](#reliability)
+
+  * [REL-01: Don't put all your fallbacks on the same provider](#rel-01-dont-put-all-your-fallbacks-on-the-same-provider)
+
+  * [REL-02: Your agent says "done" when it isn't](#rel-02-your-agent-says-done-when-it-isnt)
+
+  * [REL-03: Use heartbeat to rotate recurring checks, not just repeat one generic check](#rel-03-use-heartbeat-to-rotate-recurring-checks-not-just-repeat-one-generic-check)
+
+  * [REL-04: Turn on tool-loop detection before a bad run burns hours](#rel-04-turn-on-tool-loop-detection-before-a-bad-run-burns-hours)
+
+  * [REL-05: Send exec approvals to chat so risky commands do not run off-screen](#rel-05-send-exec-approvals-to-chat-so-risky-commands-do-not-run-off-screen)
+
+* [💸 Cost](#cost)
+
+  * [COST-01: Your heartbeat model is costing you more than you think](#cost-01-your-heartbeat-model-is-costing-you-more-than-you-think)
+
+  * [COST-02: Use cache-ttl pruning or idle sessions will re-cache junk history](#cost-02-use-cache-ttl-pruning-or-idle-sessions-will-re-cache-junk-history)
+
+  * [COST-03: Local models are often a false economy](#cost-03-local-models-are-often-a-false-economy)
+
+  * [COST-04: Use local models only for repetitive mechanical work](#cost-04-use-local-models-only-for-repetitive-mechanical-work)
+
+* [⚙️ Operations](#operations)
+
+  * [OPS-01: Set explicit concurrency limits for agents and subagents](#ops-01-set-explicit-concurrency-limits-for-agents-and-subagents)
+
+  * [OPS-02: Learn the slash commands that actually save bad sessions](#ops-02-learn-the-slash-commands-that-actually-save-bad-sessions)
+
+  * [OPS-03: Use ](#ops-03-use-openclaw-backup-create---verify-for-real-recovery-not-just-git-habits)`openclaw backup create --verify`[ for real recovery, not just git habits](#ops-03-use-openclaw-backup-create---verify-for-real-recovery-not-just-git-habits)
+
+* [⏱️ Automation](#automation)
+
+  * [AUTO-01: Standing orders define what, cron defines when](#auto-01-standing-orders-define-what-cron-defines-when)
+
+  * [AUTO-02: Use isolated cron jobs for noisy chores](#auto-02-use-isolated-cron-jobs-for-noisy-chores)
+
+* [🏗️ Architecture](#architecture)
+
+  * [ARCH-01: Stop using one generic agent for everything](#arch-01-stop-using-one-generic-agent-for-everything)
+
+  * [ARCH-02: Keep your orchestrator as a manager, not the doer](#arch-02-keep-your-orchestrator-as-a-manager-not-the-doer)
+
+  * [ARCH-03: Give different models different prompt files](#arch-03-give-different-models-different-prompt-files)
+
+  * [ARCH-04: Predefine subagent workspaces or they lose shared context](#arch-04-predefine-subagent-workspaces-or-they-lose-shared-context)
 
 ## 💬 Messages
 
 ### MES-01: Enable ack reactions by setting `messages.ackReactionScope`
-
-<table width="100%">
-  <tr>
-    <td width="58%" valign="top">
-      <p>Ack reactions are controlled by <code>messages.ackReactionScope</code>. If you want acknowledgements to appear more broadly, set the scope explicitly instead of relying on the default.</p>
-      <p>Use <code>all</code> when you want broad ack reactions across chats instead of narrower behavior like direct messages only or group mentions only.</p>
-      <p>Set it like this:</p>
-      <pre lang="json5"><code>{
-  messages: {
-    ackReactionScope: "all"
-  }
-}</code></pre>
-      <p>Valid values are <code>group-mentions</code>, <code>group-all</code>, <code>direct</code>, <code>all</code>, <code>off</code>, and <code>none</code>.</p>
-    </td>
-    <td width="42%" valign="top">
-      <img src="./tips/mes-01/ack-reactions.png" alt="Telegram message showing ack reactions on a user message" width="100%" />
-    </td>
-  </tr>
-</table>
-
-<details>
-<summary><strong>Copy prompt - implement this tip for me</strong></summary>
 
 ```md
 Review my OpenClaw config and enable ack reactions by setting `messages.ackReactionScope` explicitly.
@@ -102,40 +127,9 @@ Then show me:
 - any assumptions you made
 ```
 
-</details>
-
-<a id="telegram"></a>
-
 ## 📨 Telegram
 
 ### TEL-01: Use Telegram inline buttons for recurring actions
-
-<table width="100%">
-  <tr>
-    <td width="58%" valign="top">
-      <p>If Telegram users have to keep typing the same replies, approvals, or short commands, the workflow gets slower than it needs to be. OpenClaw supports Telegram inline buttons, so recurring actions can be one tap instead of another typed message.</p>
-      <p>The important distinction is that plain text option lists are not inline buttons. For real clickable Telegram buttons, the message must include a real inline-keyboard payload.</p>
-      <p>This is a good fit for approvals and review flows. It also works well for quick replies and common follow-up actions. Use it anywhere repeated choices are clearer as taps than typed messages.</p>
-    </td>
-    <td width="42%" valign="top">
-      <img src="./tips/tel-01/telegram-inline-buttons.png" alt="Telegram inline buttons rendered as real clickable buttons in chat" width="100%" />
-    </td>
-  </tr>
-</table>
-
-<p>Turn on inline buttons with Telegram capability scope:</p>
-<pre lang="json5"><code>{
-channels: {
-  telegram: {
-    capabilities: {
-      inlineButtons: "all"
-    }
-  }
-}
-}</code></pre>
-<p>The supported scopes are <code>off</code>, <code>dm</code>, <code>group</code>, <code>all</code>, and <code>allowlist</code>.</p>
-<details>
-<summary><strong>Copy prompt - implement this tip for me</strong></summary>
 
 ```md
 Review my OpenClaw Telegram setup and enable inline buttons for recurring actions where taps are better than typed replies.
@@ -175,10 +169,6 @@ Then report back with:
 - any follow-up recommendation for recurring-action button patterns
 ```
 
-</details>
-
-<a id="memory"></a>
-
 ## 🧠 Memory
 
 ### MEM-01: Make your agent learn from its mistakes
@@ -187,8 +177,9 @@ By default, every session starts clean. Your agent has no memory of the last tim
 
 The minimum fix is a `.learnings/` folder in your workspace with two files:
 
-- `.learnings/ERRORS.md` - command failures, breakages, exceptions
-- `.learnings/LEARNINGS.md` - corrections, knowledge gaps, workflow discoveries
+* `.learnings/ERRORS.md` - command failures, breakages, exceptions
+
+* `.learnings/LEARNINGS.md` - corrections, knowledge gaps, workflow discoveries
 
 Add this to `SOUL.md`:
 
@@ -198,9 +189,6 @@ When you fail at something or I correct you, log it to .learnings/ immediately.
 ```
 
 Over time, repeated lessons can be promoted into `SOUL.md` itself so they apply automatically in future sessions.
-
-<details>
-<summary><strong>Copy prompt - implement this tip for me</strong></summary>
 
 ```md
 Implement a self-improving learnings system in my OpenClaw workspace.
@@ -222,8 +210,6 @@ Then show me:
 - one example `ERRORS.md` entry
 - one example `LEARNINGS.md` entry
 ```
-
-</details>
 
 For a fuller version with automatic hooks, structured entries, and a promotion workflow, install the [self-improving-agent skill](https://clawhub.ai/pskoett/self-improving-agent).
 
@@ -252,9 +238,6 @@ This watches context usage, triggers a silent flush before hard compaction, and 
 
 This pairs naturally with `MEM-01`. Chat is working memory. Files are memory.
 
-<details>
-<summary><strong>Copy prompt - implement this tip for me</strong></summary>
-
 ```md
 Implement pre-compaction memory flushing in my OpenClaw setup so important state gets written to disk before context compaction happens.
 
@@ -276,27 +259,7 @@ Then show me:
 - any assumptions you made about my current memory setup
 ```
 
-</details>
-
 ### MEM-03: Use SQLite memory search before you pay for embeddings
-
-<table width="100%">
-  <tr>
-    <td width="58%" valign="top">
-      <p>Most personal OpenClaw setups do not need a vector database just to find old notes. A local SQLite index with FTS5 is often enough.</p>
-      <p>This tip ships with supporting files in <code>tips/mem-03/</code>.</p>
-      <p>Build the database:</p><code>node tips/mem-03/rebuild-db.js</code>
-      <p>Search it:</p><code>node tips/mem-03/relevant-memory.js "query about previous work"</code>
-      <p>The scripts scan markdown files, build a SQLite database, and use full-text search to surface likely matches quickly. No API costs, no embedding pipeline, no external service.</p>
-    </td>
-    <td width="42%" valign="top">
-      <img src="./tips/mem-03/sqlite-memory-search.png" alt="SQLite memory search returning relevant matches in Telegram" width="100%" />
-    </td>
-  </tr>
-</table>
-
-<details>
-<summary><strong>Copy prompt - implement this tip for me</strong></summary>
 
 ```md
 Implement a lightweight SQLite memory search system in my OpenClaw workspace so I can search past notes without paying for embeddings.
@@ -325,24 +288,21 @@ Then show me:
 - any assumptions you made about my current memory layout
 ```
 
-</details>
-
 ### MEM-04: Treat chat history as cache, not the source of truth
 
 If you want OpenClaw to remember things reliably, write them to the files OpenClaw already knows how to use. Transcript memory is fragile. Compaction, resets, and long idle gaps all make chat a bad place to keep anything important.
 
 OpenClaw already has a real file pattern for this:
 
-- `MEMORY.md` - durable facts, preferences, decisions
-- `memory/YYYY-MM-DD.md` - daily notes and running context
-- `AGENTS.md` - standing rules for how the agent should use those files
+* `MEMORY.md` - durable facts, preferences, decisions
+
+* `memory/YYYY-MM-DD.md` - daily notes and running context
+
+* `AGENTS.md` - standing rules for how the agent should use those files
 
 That is the practical version of "chat is cache". Important facts belong in `MEMORY.md`. Short-term working context belongs in daily memory files. `AGENTS.md` should tell the agent to read and update them instead of trusting the transcript to carry everything forward.
 
 If task state matters too, put that in an actual task system or another durable store you already use. The rule is the same: if losing the transcript would break the workflow, the state is in the wrong place.
-
-<details>
-<summary><strong>Copy prompt - implement this tip for me</strong></summary>
 
 ```md
 Set up durable memory files in my OpenClaw workspace so important context does not depend on chat history.
@@ -366,8 +326,6 @@ Then show me:
 - any assumptions you made
 ```
 
-</details>
-
 ### MEM-05: Split conversations into threads so context stops bleeding across topics
 
 One long OpenClaw conversation turns into a junk drawer. Coding, research, admin, and random questions all get mixed together, and every new turn drags that baggage forward.
@@ -379,12 +337,6 @@ That means the practical fix is simple: split work by topic or channel. Keep one
 This is one of the easiest memory fixes because it does not require a new memory system. It just uses OpenClaw's existing session isolation properly.
 
 For Telegram specifically, BotFather has a setting for this now. Open BotFather, choose your bot from **My bots**, go to **Bot Settings**, and turn on **Threaded Mode**.
-
-<p align="center">
-  <img src="./tips/mem-05/telegram-1.png" alt="Open BotFather and choose your bot from My bots" width="30%" />
-  <img src="./tips/mem-05/telegram-2.png" alt="Enable Threaded Mode in Bot Settings" width="30%" />
-  <img src="./tips/mem-05/telegram-3.png" alt="Telegram chat using separate topic tabs" width="34%" />
-</p>
 
 Once it is enabled, Telegram gives the bot separate tabs/topics in the chat UI. That is exactly what this tip needs - coding in one topic, research in another, admin in another - instead of one mixed transcript where everything contaminates everything else.
 
@@ -405,9 +357,6 @@ git commit -m "Add agent workspace"
 If you use GitHub or GitLab, make the repo private and push it there. If git is installed, brand-new OpenClaw workspaces can even auto-initialize, which tells you this is not a weird custom pattern - it is a normal way to treat the workspace.
 
 This pairs naturally with `MEM-04`. If the workspace is the source of truth, git is how you keep that source of truth recoverable.
-
-<details>
-<summary><strong>Copy prompt - implement this tip for me</strong></summary>
 
 ```md
 Set up my OpenClaw workspace as a private git-backed source of truth.
@@ -439,8 +388,6 @@ Then show me:
 - if not, the exact commands I should run next
 ```
 
-</details>
-
 ### MEM-07: Back up your workspace continuously, not just once
 
 `git init` is not the backup. The backup only becomes real once you keep pushing updates.
@@ -469,13 +416,6 @@ openclaw cron create \
   --message "Check the workspace git repo. If meaningful workspace files changed, commit and push them. Skip trivial noise. Never commit secrets or anything under ~/.openclaw/. Report what happened."
 ```
 
-<p align="center">
-  <img src="./tips/mem-07/workspace-backup-check.png" alt="OpenClaw cron job configured for workspace backup checks" width="100%" />
-</p>
-
-<details>
-<summary><strong>Copy prompt - implement this tip for me</strong></summary>
-
 ```md
 Set up a practical ongoing backup workflow for my OpenClaw workspace repo so updates keep getting pushed after the initial setup.
 
@@ -502,8 +442,6 @@ Then show me:
 - the exact ongoing sync commands
 - the secret-safety warning you added
 ```
-
-</details>
 
 ### MEM-08: Periodically self-clean memory instead of letting it rot forever
 
@@ -536,16 +474,9 @@ Every few days:
 - Reply `NO_REPLY` if nothing needs updating
 ```
 
-<p align="center">
-  <img src="./tips/mem-08/heartbeat-memory-maintenance.png" alt="HEARTBEAT.md with a memory maintenance section added" width="100%" />
-</p>
-
 If you want exact timing or a fully isolated cleanup run, a cron job is still fine. But heartbeat is the more natural default for this tip.
 
 Good memory is not just persistent. It is maintained.
-
-<details>
-<summary><strong>Copy prompt - implement this tip for me</strong></summary>
 
 ```md
 Set up a practical memory-maintenance workflow for my OpenClaw workspace so `MEMORY.md` stays useful instead of slowly filling with stale facts.
@@ -569,9 +500,128 @@ Then show me:
 - whether you used heartbeat or recommended cron instead
 ```
 
-</details>
+### MEM-09: Turn on session memory indexing so memory search can find old conversations
 
-<a id="reliability"></a>
+If you want OpenClaw to find things it said in previous sessions, do not rely on chat context surviving forever. OpenClaw can index session logs into memory search, so old conversations become retrievable instead of disappearing behind compaction and session boundaries.
+
+Turn it on like this:
+
+```json5
+{
+  agents: {
+    defaults: {
+      memorySearch: {
+        experimental: { sessionMemory: true },
+        sources: ["memory", "sessions"]
+      }
+    }
+  }
+}
+```
+
+This is opt-in, not automatic. Indexing runs asynchronously, `memory_search` can be briefly stale while background sync catches up, and results still come back as snippets rather than full transcript dumps.
+
+Also note the trust boundary: session logs live on disk under the agent's session files, so anyone with filesystem access can read them. If you need stronger isolation, split agents by OS user or host.
+
+```md
+Review my OpenClaw memory setup and enable session memory indexing so memory search can find useful facts from old conversations.
+
+Do all of the following:
+
+1. Find my active OpenClaw config file.
+2. Check whether `agents.defaults.memorySearch` or any `agents.list[].memorySearch` overrides already exist.
+3. If session memory is not enabled, add:
+   - `memorySearch.experimental.sessionMemory = true`
+   - `memorySearch.sources = ["memory", "sessions"]`
+4. Merge carefully with any existing memory-search settings instead of overwriting unrelated config.
+5. Explain that session indexing is opt-in and asynchronous, so search results may lag briefly behind new conversation activity.
+6. Explain that results still come back as snippets, not full transcript loading.
+7. Point out the trust boundary: session logs live on disk and are readable by processes or users with filesystem access.
+8. Tell me whether the setting should live in shared defaults or in an agent-specific override for my setup.
+
+Then show me:
+- which config file you changed
+- the exact memory-search block before and after
+- whether session memory is enabled globally or per agent
+- any existing overrides you found
+- the trust-boundary warning you think I should know
+- any assumptions you made
+```
+
+## 🔐 Security
+
+### SEC-01: Send exec approval prompts to Telegram or Discord so risky commands never run silently
+
+If your bot acts remotely, a local approval popup is easy to miss. OpenClaw can send exec approval prompts into Telegram or Discord, and only configured approvers can resolve them there.
+
+Telegram supports chat-based exec approvals like this:
+
+```json5
+{
+  channels: {
+    telegram: {
+      execApprovals: {
+        enabled: true,
+        approvers: [123456789],
+        target: "dm"
+      }
+    }
+  }
+}
+```
+
+Discord supports the same pattern:
+
+```json5
+{
+  channels: {
+    discord: {
+      execApprovals: {
+        enabled: true,
+        approvers: ["123456789012345678"],
+        target: "dm"
+      }
+    }
+  }
+}
+```
+
+Approvals can then be resolved with:
+
+```text
+/approve <id> allow-once
+/approve <id> allow-always
+/approve <id> deny
+```
+
+Use `target: "dm"` by default. `channel` and `both` can post the approval prompt back into the originating chat, and those prompts include the raw command text, so only use them in trusted chats or topics.
+
+```md
+Review my OpenClaw exec approval setup and make risky command approvals arrive in Telegram or Discord instead of relying only on a local approval UI.
+
+Do all of the following:
+
+1. Find my active OpenClaw config file.
+2. Check whether I already use `channels.telegram.execApprovals`, `channels.discord.execApprovals`, or generic `approvals.exec` forwarding.
+3. Identify whether Telegram or Discord is my real operator channel.
+4. Configure the chat approval path that best matches my setup.
+5. Prefer `target = "dm"` by default.
+6. Only use `target = "channel"` or `target = "both"` if I explicitly want prompts to appear in the originating chat and understand that command text will be exposed there.
+7. Configure explicit approvers only.
+8. If Telegram is used and inline buttons matter, check whether `channels.telegram.capabilities.inlineButtons` allows the target surface.
+9. Explain how I will approve or deny requests with `/approve <id> allow-once|allow-always|deny`.
+10. If possible, run or simulate a safe approval-required test and verify the prompt reaches the intended chat surface.
+
+Then show me:
+- which config file you changed
+- whether you used Telegram, Discord, or generic forwarding
+- the exact config block before and after
+- who the configured approvers are
+- whether prompts go to DM, channel, or both
+- whether command text is exposed on that surface
+- whether you verified delivery with a test
+- any assumptions you made
+```
 
 ## 🛡️ Reliability
 
@@ -604,9 +654,6 @@ The point is not those exact providers. The point is failure independence. A lim
 
 The default shared path is `agents.defaults.model.fallbacks`. If one agent needs its own fallback chain, OpenClaw also supports a per-agent override in `agents.list[].model = { primary, fallbacks }`.
 
-<details>
-<summary><strong>Copy prompt - implement this tip for me</strong></summary>
-
 ```md
 Review my OpenClaw model fallback setup and help me choose a provider-diverse fallback chain before changing anything.
 
@@ -633,8 +680,6 @@ Then show me:
 - after I choose, the exact config path and primary/fallback models after
 ```
 
-</details>
-
 ### REL-02: Your agent says "done" when it isn't
 
 One of the most common OpenClaw failures is fake completion. The agent acknowledges the task, says it is done, and never verifies whether anything actually happened.
@@ -656,9 +701,6 @@ If it fails again, report the failure with a diagnosis. Never fail silently.
 ```
 
 This does not change what your agent can do. It changes what counts as finished.
-
-<details>
-<summary><strong>Copy prompt - implement this tip for me</strong></summary>
 
 ```md
 Update my OpenClaw instructions so the agent does not report fake completion.
@@ -684,8 +726,6 @@ Then show me:
 - any existing rules you had to merge with
 - any edge cases or ambiguities you noticed
 ```
-
-</details>
 
 ### REL-03: Use heartbeat to rotate recurring checks, not just repeat one generic check
 
@@ -715,9 +755,6 @@ Process:
 
 This works well when you want lightweight recurring coverage without creating a separate cron job for every single check.
 
-<details>
-<summary><strong>Copy prompt - implement this tip for me</strong></summary>
-
 ```md
 Upgrade my OpenClaw heartbeat so it rotates through a few recurring checks instead of repeating one generic check.
 
@@ -738,8 +775,6 @@ Then show me:
 - what counts as an actionable report vs `HEARTBEAT_OK`
 - whether you kept it as heartbeat or recommended cron for any specific check
 ```
-
-</details>
 
 ### REL-04: Turn on tool-loop detection before a bad run burns hours
 
@@ -770,9 +805,6 @@ Start with the default thresholds and turn it on like this:
 
 The docs recommend starting with `enabled: true` and leaving the defaults alone until you see a real reason to tune them. If you get false positives, raise thresholds or disable the specific detector causing trouble instead of turning the whole guard off.
 
-<details>
-<summary><strong>Copy prompt - implement this tip for me</strong></summary>
-
 ```md
 Review my OpenClaw config and turn on tool-loop detection so bad tool-call loops do not burn time and tokens unchecked.
 
@@ -802,10 +834,6 @@ Then show me:
 - any assumptions you made
 ```
 
-</details>
-
-<a id="cost"></a>
-
 ## 💸 Cost
 
 ### COST-01: Your heartbeat model is costing you more than you think
@@ -830,9 +858,6 @@ Use a cheaper model for heartbeats:
 
 For most setups, heartbeat work is lightweight: check whether something needs attention, return `HEARTBEAT_OK`, or surface a short actionable update. That usually does not need your main high-cost model.
 
-<details>
-<summary><strong>Copy prompt - implement this tip for me</strong></summary>
-
 ```md
 Review my OpenClaw heartbeat configuration and set a cheaper heartbeat-specific model if I am currently using an unnecessarily expensive one.
 
@@ -854,8 +879,6 @@ Then show me:
 - what model heartbeat uses after
 - why that change makes sense for cost and workload
 ```
-
-</details>
 
 ### COST-02: Use cache-ttl pruning or idle sessions will re-cache junk history
 
@@ -882,11 +905,9 @@ This is mainly useful for Anthropic prompt caching behavior, including OpenRoute
 
 If you use Anthropic `cacheRetention`, match the pruning TTL to that cache window when possible:
 
-- `ttl: "5m"` pairs with `cacheRetention: "short"`
-- `ttl: "1h"` pairs with `cacheRetention: "long"`
+* `ttl: "5m"` pairs with `cacheRetention: "short"`
 
-<details>
-<summary><strong>Copy prompt - implement this tip for me</strong></summary>
+* `ttl: "1h"` pairs with `cacheRetention: "long"`
 
 ```md
 Review my OpenClaw config and enable cache-ttl context pruning so idle sessions do not re-cache oversized tool-result history.
@@ -912,8 +933,6 @@ Then show me:
 - any assumptions you made
 ```
 
-</details>
-
 ### COST-03: Local models are often a false economy
 
 Local models can look cheaper because the per-request API cost is zero. In practice, many OpenClaw setups pay for that elsewhere: expensive hardware, higher latency, weaker output, smaller context windows, or more operational work to keep the local stack reliable.
@@ -924,12 +943,11 @@ That means local is usually not the default cost fix for OpenClaw. It makes more
 
 If you do run local, keep the setup realistic:
 
-- use the largest model you can run well
-- keep hosted models available as fallbacks with `models.mode: "merge"`
-- treat local as an infrastructure decision, not just a pricing trick
+* use the largest model you can run well
 
-<details>
-<summary><strong>Copy prompt - implement this tip for me</strong></summary>
+* keep hosted models available as fallbacks with `models.mode: "merge"`
+
+* treat local as an infrastructure decision, not just a pricing trick
 
 ```md
 Review my OpenClaw model setup and tell me whether moving more of it to local models would actually reduce total cost for my workload.
@@ -952,8 +970,6 @@ Then show me:
 - any assumptions you made
 ```
 
-</details>
-
 ### COST-04: Use local models only for repetitive mechanical work
 
 Local models make more economic sense when the work is repetitive, narrow, and tolerant of weaker output. That usually means chores like classification, tagging, sorting, extraction, and other mechanical steps that do not need your best reasoning model.
@@ -962,14 +978,13 @@ This fits OpenClaw's local-model guidance better than using local as a blanket r
 
 In practice, the safe pattern is usually:
 
-- keep your main agent on a stronger hosted model
-- use local for repetitive background work or narrow helper tasks
-- keep fallbacks available with `models.mode: "merge"` when local reliability matters
+* keep your main agent on a stronger hosted model
+
+* use local for repetitive background work or narrow helper tasks
+
+* keep fallbacks available with `models.mode: "merge"` when local reliability matters
 
 That way local handles cheap mechanical work, while your main assistant keeps the quality level needed for planning, synthesis, and higher-trust decisions.
-
-<details>
-<summary><strong>Copy prompt - implement this tip for me</strong></summary>
 
 ```md
 Review my OpenClaw setup and tell me whether I should use local models for any repetitive mechanical work instead of trying to move my main agent fully local.
@@ -992,10 +1007,6 @@ Then show me:
 - any assumptions you made
 ```
 
-</details>
-
-<a id="operations"></a>
-
 ## ⚙️ Operations
 
 ### OPS-01: Set explicit concurrency limits for agents and subagents
@@ -1004,8 +1015,9 @@ If you run multi-agent workflows, concurrency is one of the easiest ways to lose
 
 OpenClaw gives you two separate caps:
 
-- `agents.defaults.maxConcurrent` - max parallel main agent runs across sessions
-- `agents.defaults.subagents.maxConcurrent` - max parallel subagent runs in the dedicated subagent lane
+* `agents.defaults.maxConcurrent` - max parallel main agent runs across sessions
+
+* `agents.defaults.subagents.maxConcurrent` - max parallel subagent runs in the dedicated subagent lane
 
 Subagent concurrency is a global setting. Do not put `maxConcurrent` under `agents.list[].subagents`; that per-agent block only supports subagent allowlists such as `subagents.allowAgents`.
 
@@ -1025,9 +1037,6 @@ Set them explicitly:
 ```
 
 The main agent limit defaults to `1`. The subagent lane defaults to `8`. Even if those defaults are acceptable, setting them explicitly makes the intended safety limits clear and keeps later config changes from drifting.
-
-<details>
-<summary><strong>Copy prompt - implement this tip for me</strong></summary>
 
 ```md
 Review my OpenClaw concurrency settings and set explicit safe limits for both main agent runs and subagent runs.
@@ -1053,25 +1062,25 @@ Then show me:
 - any assumptions you made
 ```
 
-</details>
-
 ### OPS-02: Learn the slash commands that actually save bad sessions
 
 When a session gets slow, bloated, or confused, the fix is often not another long prompt. OpenClaw already has slash commands for resetting, inspecting, stopping, compacting, switching models, and managing subagents.
 
 The few that matter most in bad sessions are usually:
 
-- `/new` - start a fresh session without dragging the old context along
-- `/compact` - shrink the current session when you want to keep going
-- `/usage` - inspect token or cost burn instead of guessing
-- `/stop` - stop a bad run before it wastes more time or tokens
-- `/model` - switch models when the current path is a poor fit
-- `/subagents` - inspect or control subagent runs when delegation gets messy
+* `/new` - start a fresh session without dragging the old context along
+
+* `/compact` - shrink the current session when you want to keep going
+
+* `/usage` - inspect token or cost burn instead of guessing
+
+* `/stop` - stop a bad run before it wastes more time or tokens
+
+* `/model` - switch models when the current path is a poor fit
+
+* `/subagents` - inspect or control subagent runs when delegation gets messy
 
 These are operational recovery tools, not trivia. If you use OpenClaw regularly, knowing this small set saves more time than trying to rescue every bad session with another prompt.
-
-<details>
-<summary><strong>Copy prompt - implement this tip for me</strong></summary>
 
 ```md
 Review my OpenClaw setup and create a short cheat sheet of the slash commands that are most useful for recovering bad sessions.
@@ -1092,9 +1101,54 @@ Then show me:
 - any assumptions you made
 ```
 
-</details>
+### OPS-03: Use `openclaw backup create --verify` for real recovery, not just git habits
 
-<a id="automation"></a>
+Git is useful for workspace files, but it is not a full OpenClaw recovery plan. OpenClaw has a first-class backup command that can archive state, config, credentials, sessions, and optionally workspaces.
+
+Start with:
+
+```bash
+openclaw backup create --verify
+```
+
+That gives you an actual backup archive and immediately validates it. The archive includes a `manifest.json`, and OpenClaw verifies that the manifest is sane and that every declared payload is really present in the tarball.
+
+Two practical fallbacks matter:
+
+```bash
+openclaw backup create --no-include-workspace
+openclaw backup create --only-config
+```
+
+Use `--no-include-workspace` when the config is malformed or the workspace is too big and you still want state, config, and credentials. Use `--only-config` when you just need a copy of the active config file or workspace discovery cannot run.
+
+This is the difference between "my repo is backed up" and "I can actually recover the assistant I was running."
+
+```md
+Review my OpenClaw backup setup and make sure I have a real recovery path, not just a git repository with workspace files.
+
+Do all of the following:
+
+1. Find my active OpenClaw config file and workspace location.
+2. Explain what git currently protects for me and what it does not protect.
+3. Check whether I already have any OpenClaw backup workflow or archive location.
+4. Recommend a normal backup command using `openclaw backup create --verify`.
+5. Explain when I should use these fallback modes:
+   - `openclaw backup create --no-include-workspace`
+   - `openclaw backup create --only-config`
+6. If appropriate, create a small script, task, or scheduled command that runs the right backup command for my setup.
+7. Keep secrets and backup artifacts out of my git repo unless I explicitly want that.
+8. If possible, verify that the command completes successfully or clearly report what blocked verification.
+
+Then show me:
+- what OpenClaw data would be backed up
+- what git covers vs what the OpenClaw backup covers
+- the exact backup command you recommend
+- when to use `--verify`, `--no-include-workspace`, and `--only-config`
+- where the archive should be stored
+- whether you verified the backup command with a real run
+- any assumptions you made
+```
 
 ## ⏱️ Automation
 
@@ -1118,9 +1172,6 @@ openclaw cron add \
 
 This gives you one place to update the logic later. Change the standing order once in `AGENTS.md`, and the scheduled job keeps using the new behavior without rewriting every cron prompt.
 
-<details>
-<summary><strong>Copy prompt - implement this tip for me</strong></summary>
-
 ```md
 Review my OpenClaw automation setup and separate standing instructions from scheduling so the logic lives in standing orders and cron only controls timing.
 
@@ -1142,10 +1193,6 @@ Then show me:
 - what logic now lives in the standing order vs the cron job
 - any assumptions you made
 ```
-
-</details>
-
-<a id="architecture"></a>
 
 ## 🏗️ Architecture
 
@@ -1185,9 +1232,6 @@ The point is not those exact models. The point is role separation. Keep the moni
 
 Start with three roles, not twelve.
 
-<details>
-<summary><strong>Copy prompt - implement this tip for me</strong></summary>
-
 ```md
 Review my OpenClaw setup and tell me whether I should split my current single-agent setup into a small multi-agent architecture with distinct roles.
 
@@ -1210,8 +1254,6 @@ Then show me:
 - any assumptions you made
 ```
 
-</details>
-
 ### ARCH-02: Keep your orchestrator as a manager, not the doer
 
 In a multi-agent setup, the main orchestrator works best as a manager. Its job is to plan, route work, keep context straight, and report back. Once it starts trying to do every research task, coding task, and background chore itself, the system gets slower and less reliable.
@@ -1220,14 +1262,13 @@ This matches OpenClaw's multi-agent and delegate patterns. Separate agents can o
 
 The practical split looks like this:
 
-- the orchestrator decides what needs to happen
-- specialist agents do the bounded work
-- the orchestrator collects results and reports the outcome
+* the orchestrator decides what needs to happen
+
+* specialist agents do the bounded work
+
+* the orchestrator collects results and reports the outcome
 
 If the main agent is busy doing the work itself, it is not really orchestrating.
-
-<details>
-<summary><strong>Copy prompt - implement this tip for me</strong></summary>
 
 ```md
 Review my OpenClaw setup and tell me whether my main agent should act more like an orchestrator that plans and delegates instead of trying to do all work itself.
@@ -1251,8 +1292,6 @@ Then show me:
 - any assumptions you made
 ```
 
-</details>
-
 ### ARCH-03: Give different models different prompt files
 
 Model switching is not just about cost or speed. Different models follow instructions differently, handle tone differently, and fail in different ways. If you rely on multiple important model paths, one shared prompt setup can leave quality on the table.
@@ -1261,14 +1300,13 @@ OpenClaw already gives you the main pieces needed for this: per-agent workspaces
 
 The practical version is simple:
 
-- keep one prompt/workspace setup for your main high-quality model path
-- keep a separate prompt/workspace setup for cheaper, narrower, or more operational models
-- tune each one for how that model actually behaves in practice
+* keep one prompt/workspace setup for your main high-quality model path
+
+* keep a separate prompt/workspace setup for cheaper, narrower, or more operational models
+
+* tune each one for how that model actually behaves in practice
 
 This does not mean creating a huge prompt matrix. It means separating the prompt setups that clearly need different instructions.
-
-<details>
-<summary><strong>Copy prompt - implement this tip for me</strong></summary>
 
 ```md
 Review my OpenClaw setup and tell me whether I should keep different prompt/workspace files for different important model paths instead of using one shared prompt setup for everything.
@@ -1290,8 +1328,6 @@ Then show me:
 - what tradeoffs come with keeping separate prompt files
 - any assumptions you made
 ```
-
-</details>
 
 ### ARCH-04: Predefine subagent workspaces or they lose shared context
 
@@ -1318,9 +1354,6 @@ For example:
 
 If you do not want a shared workspace, that is fine too. The important part is to choose deliberately. Accidental empty workspaces are what cause confusing subagent results.
 
-<details>
-<summary><strong>Copy prompt - implement this tip for me</strong></summary>
-
 ```md
 Review my OpenClaw subagent setup and make sure spawned agents use intentional workspace paths instead of accidentally running with empty default workspaces.
 
@@ -1342,8 +1375,6 @@ Then show me:
 - any assumptions you made
 ```
 
-</details>
-
 ### AUTO-02: Use isolated cron jobs for noisy chores
 
 Some scheduled jobs do not belong in your main chat history. Frequent background chores like inbox cleanup, status polling, or routine maintenance can create noise if they keep waking the main session.
@@ -1362,9 +1393,6 @@ openclaw cron add \
 ```
 
 This keeps the recurring job in its own `cron:<jobId>` session. It is a better fit than a main-session job when the task should stay in the background and only surface a useful summary.
-
-<details>
-<summary><strong>Copy prompt - implement this tip for me</strong></summary>
 
 ```md
 Review my OpenClaw cron jobs and move noisy background chores to isolated cron sessions when they should not pollute the main session history.
@@ -1387,13 +1415,104 @@ Then show me:
 - any assumptions you made
 ```
 
-</details>
+### REL-05: Send exec approvals to chat so risky commands do not run off-screen
 
+If your bot runs remotely, local exec approval prompts are easy to miss. OpenClaw can forward those prompts into chat, let only configured approvers resolve them, and keep risky `exec` actions visible instead of leaving them hidden in a local UI.
+
+The generic forwarding path is `approvals.exec`. That lets OpenClaw send approval requests to explicit chat targets and resolve them with `/approve`:
+
+```json5
+{
+  approvals: {
+    exec: {
+      enabled: true,
+      mode: "targets",
+      targets: [
+        { channel: "telegram", to: "123456789" }
+      ]
+    }
+  }
+}
+```
+
+OpenClaw also has built-in Telegram and Discord approval clients:
+
+```json5
+{
+  channels: {
+    telegram: {
+      execApprovals: {
+        enabled: true,
+        approvers: [123456789],
+        target: "dm"
+      }
+    }
+  }
+}
+```
+
+```json5
+{
+  channels: {
+    discord: {
+      execApprovals: {
+        enabled: true,
+        approvers: ["123456789012345678"],
+        target: "dm"
+      }
+    }
+  }
+}
+```
+
+Use `target: "dm"` unless you fully trust the originating chat. `channel` and `both` can post the approval prompt back into the chat or topic, and those prompts include the command text.
+
+Approvals can then be resolved in chat with:
+
+```text
+/approve <id> allow-once
+/approve <id> allow-always
+/approve <id> deny
+```
+
+```md
+Review my OpenClaw exec approval setup and make risky shell commands approvable from chat instead of only through a local UI.
+
+Do all of the following:
+
+1. Find my active OpenClaw config file.
+2. Check whether I already use `approvals.exec`, `channels.telegram.execApprovals`, or `channels.discord.execApprovals`.
+3. Identify which chat channel I actually use for operator control.
+4. Recommend the safest chat approval path for my setup:
+   - generic forwarding via `approvals.exec.targets`
+   - Telegram exec approvals via `channels.telegram.execApprovals`
+   - Discord exec approvals via `channels.discord.execApprovals`
+5. Prefer DM delivery by default. Only use `target = "channel"` or `target = "both"` if I explicitly want approval prompts to appear in the originating chat and understand that command text will be shown there.
+6. Configure explicit approvers only. Do not leave approval authority open-ended.
+7. If Telegram inline approval buttons are needed, check whether `channels.telegram.capabilities.inlineButtons` allows the target surface.
+8. Explain how to resolve prompts in chat with:
+   - `/approve <id> allow-once`
+   - `/approve <id> allow-always`
+   - `/approve <id> deny`
+9. If possible, trigger a safe approval-required test and verify that the approval prompt reaches the intended chat surface.
+10. Do not claim success unless the approval prompt was actually delivered where expected, or clearly state what blocked verification.
+
+Then show me:
+- which config file you changed
+- which approval path you chose and why
+- the exact config block before and after
+- who the configured approvers are
+- whether prompts go to DM, channel, or both
+- whether command text is exposed on that surface
+- how I should approve or deny the next request
+- whether you verified delivery with a real test
+- any assumptions you made
+```
 
 ## Acknowledgements
 
-- [digitalknk/openclaw-runbook](https://github.com/digitalknk/openclaw-runbook)
-- [ucsandman/OpenClaw-Setup](https://github.com/ucsandman/OpenClaw-Setup)
+* [digitalknk/openclaw-runbook](https://github.com/digitalknk/openclaw-runbook)
 
+* [ucsandman/OpenClaw-Setup](https://github.com/ucsandman/OpenClaw-Setup)
 
-<!-- TIP_APPEND_EOF: add new tip sections above this line only -->
+⠀
