@@ -23,6 +23,7 @@
   - [MES-01: Enable ack reactions by setting messages.ackReactionScope](#mes-01-enable-ack-reactions-by-setting-messagesackreactionscope)
 - [📨 Telegram](#telegram)
   - [TEL-01: Use Telegram inline buttons for recurring actions](#tel-01-use-telegram-inline-buttons-for-recurring-actions)
+  - [TEL-02: Set a system prompt per Telegram topic so /new resets noise without losing purpose](#tel-02-set-a-system-prompt-per-telegram-topic-so-new-resets-noise-without-losing-purpose)
 - [🧠 Memory](#memory)
   - [MEM-01: Make your agent learn from its mistakes](#mem-01-make-your-agent-learn-from-its-mistakes)
   - [MEM-02: Flush important state before compaction eats it](#mem-02-flush-important-state-before-compaction-eats-it)
@@ -181,6 +182,77 @@ Then report back with:
 ```
 
 </details>
+
+### TEL-02: Set a system prompt per Telegram topic so `/new` resets noise without losing purpose
+
+Telegram topics already isolate session history. Add a topic-specific `systemPrompt` and each thread can keep its own durable purpose too.
+
+This works well when one topic is for coding, another is for project operations, and another is for a specific client or team. Users can run `/new` inside the topic to clear the session, but the topic-specific prompt still loads again so the thread does not forget what it is for.
+
+<p align="center">
+  <img src="./tips/tel-02/telegram-topic-id.png" alt="Telegram chat showing the current topic id 1399171" width="49%" />
+  <img src="./tips/tel-02/telegram-topic-prompt-after-new.png" alt="Telegram topic still answering with its configured purpose after running /new" width="49%" />
+</p>
+
+<table width="100%">
+  <tr>
+    <td width="100%" valign="top">
+      <p>Use a topic-level override under the Telegram chat entry:</p>
+      <pre lang="json5"><code>{
+  channels: {
+    telegram: {
+      groups: {
+        "-1001234567890": {
+          topics: {
+            "1399171": {
+              systemPrompt: "This topic is for showcasing awesome-openclaw-tips example how to set contexts per Telegram thread via system prompts"
+            }
+          }
+        }
+      }
+    }
+  }
+}</code></pre>
+      <p>Topic entries can also override keys like <code>agentId</code>, <code>skills</code>, and <code>requireMention</code>. Keep the thread-specific purpose in <code>systemPrompt</code> and keep broader defaults at the chat or group level.</p>
+      <p>If your Telegram setup is nested per account, apply the same topic override at that account's Telegram chat entry instead of the shared default path.</p>
+    </td>
+  </tr>
+</table>
+
+<details>
+<summary><strong>Copy prompt - implement this tip for me</strong></summary>
+
+```md
+Review my OpenClaw Telegram setup and give one or more Telegram topics a thread-specific system prompt so `/new` can reset the chat without losing the topic's purpose.
+
+Do all of the following:
+
+1. Find the active OpenClaw config file actually used by this runtime.
+2. Check whether Telegram topic support is already configured for the relevant chat or account.
+3. Identify the exact Telegram chat id and topic/thread id I want to configure.
+4. Add or update a topic-specific `systemPrompt` at the correct Telegram topic config entry.
+5. Preserve existing group-level or account-level Telegram settings that should still act as defaults.
+6. If there is already a topic-specific override for that thread, merge carefully instead of overwriting unrelated keys.
+7. Explain that `/new` resets the session history for that topic, but the topic config still applies on the next run.
+8. If appropriate, suggest whether this topic should also override `agentId`, `skills`, or `requireMention`.
+9. Test the setup in that topic if possible:
+   - ask for the current topic id
+   - run `/new`
+   - ask what the topic is for
+10. Do not claim success unless the configured topic prompt is still reflected after the reset.
+
+Then show me:
+- which config file you changed
+- the exact Telegram topic config block before and after
+- which chat id and topic/thread id were configured
+- the exact `systemPrompt` now used for that topic
+- whether `/new` was tested successfully in that topic
+- any assumptions you made
+```
+
+</details>
+
+
 
 <a id="memory"></a>
 
