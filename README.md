@@ -24,17 +24,14 @@
 - [📨 Telegram](#telegram)
   - [TEL-01: Use Telegram inline buttons for recurring actions](#tel-01-use-telegram-inline-buttons-for-recurring-actions)
   - [TEL-02: Set a system prompt per Telegram topic so /new resets noise without losing purpose](#tel-02-set-a-system-prompt-per-telegram-topic-so-new-resets-noise-without-losing-purpose)
-  - [TEL-03: Give OpenClaw its own Telegram topic for fast admin work](#tel-03-give-openclaw-its-own-telegram-topic-for-fast-admin-work)
+  - [TEL-03: Split conversations into threads so context stops bleeding across topics](#tel-03-split-conversations-into-threads-so-context-stops-bleeding-across-topics)
+  - [TEL-04: Give OpenClaw its own Telegram topic for fast admin work](#tel-04-give-openclaw-its-own-telegram-topic-for-fast-admin-work)
 - [🧠 Memory](#memory)
   - [MEM-01: Make your agent learn from its mistakes](#mem-01-make-your-agent-learn-from-its-mistakes)
   - [MEM-02: Flush important state before compaction eats it](#mem-02-flush-important-state-before-compaction-eats-it)
   - [MEM-03: Use SQLite memory search before you pay for embeddings](#mem-03-use-sqlite-memory-search-before-you-pay-for-embeddings)
   - [MEM-04: Treat chat history as cache, not the source of truth](#mem-04-treat-chat-history-as-cache-not-the-source-of-truth)
-  - [MEM-05: Split conversations into threads so context stops bleeding across topics](#mem-05-split-conversations-into-threads-so-context-stops-bleeding-across-topics)
-  - [MEM-06: Make the workspace folder the source of truth and put it under git](#mem-06-make-the-workspace-folder-the-source-of-truth-and-put-it-under-git)
-  - [MEM-07: Back up your workspace continuously, not just once](#mem-07-back-up-your-workspace-continuously-not-just-once)
-  - [MEM-08: Periodically self-clean memory instead of letting it rot forever](#mem-08-periodically-self-clean-memory-instead-of-letting-it-rot-forever)
-  - [MEM-09: Delete the old session on /new so resets do not leave junk behind](#mem-09-delete-the-old-session-on-new-so-resets-do-not-leave-junk-behind)
+  - [MEM-05: Periodically self-clean memory instead of letting it rot forever](#mem-05-periodically-self-clean-memory-instead-of-letting-it-rot-forever)
 - [🛡️ Reliability](#reliability)
   - [REL-01: Don't put all your fallbacks on the same provider](#rel-01-dont-put-all-your-fallbacks-on-the-same-provider)
   - [REL-02: Your agent says "done" when it isn't](#rel-02-your-agent-says-done-when-it-isnt)
@@ -47,10 +44,13 @@
   - [COST-04: Use local models only for repetitive mechanical work](#cost-04-use-local-models-only-for-repetitive-mechanical-work)
 - [⚙️ Operations](#operations)
   - [OPS-01: Set explicit concurrency limits for agents and subagents](#ops-01-set-explicit-concurrency-limits-for-agents-and-subagents)
-  - [OPS-02: Learn the slash commands that actually save bad sessions](#ops-02-learn-the-slash-commands-that-actually-save-bad-sessions)
+  - [OPS-02: Make the workspace folder the source of truth and put it under git](#ops-02-make-the-workspace-folder-the-source-of-truth-and-put-it-under-git)
+  - [OPS-03: Learn the slash commands that actually save bad sessions](#ops-03-learn-the-slash-commands-that-actually-save-bad-sessions)
+  - [OPS-04: Delete the old session on /new so resets do not leave junk behind](#ops-04-delete-the-old-session-on-new-so-resets-do-not-leave-junk-behind)
 - [⏱️ Automation](#automation)
   - [AUTO-01: Standing orders define what, cron defines when](#auto-01-standing-orders-define-what-cron-defines-when)
   - [AUTO-02: Use isolated cron jobs for noisy chores](#auto-02-use-isolated-cron-jobs-for-noisy-chores)
+  - [AUTO-03: Back up your workspace continuously, not just once](#auto-03-back-up-your-workspace-continuously-not-just-once)
 - [🏗️ Architecture](#architecture)
   - [ARCH-01: Stop using one generic agent for everything](#arch-01-stop-using-one-generic-agent-for-everything)
   - [ARCH-02: Keep your orchestrator as a manager, not the doer](#arch-02-keep-your-orchestrator-as-a-manager-not-the-doer)
@@ -255,7 +255,27 @@ Then show me:
 </details>
 
 
-### TEL-03: Give OpenClaw its own Telegram topic for fast admin work
+### TEL-03: Split conversations into threads so context stops bleeding across topics
+
+One long OpenClaw conversation turns into a junk drawer. Coding, research, admin, and random questions all get mixed together, and every new turn drags that baggage forward.
+
+OpenClaw already has session boundaries you can use. Group chats isolate state by group. Telegram forum topics get their own `:topic:<threadId>` session keys. Slack and Discord threads are treated as thread sessions. Discord channels also get their own isolated sessions.
+
+That means the practical fix is simple: split work by topic or channel. Keep one thread for coding, another for research, another for admin, another for personal operations. Focused threads give the agent focused context instead of one huge mixed transcript.
+
+This is one of the easiest memory fixes because it does not require a new memory system. It just uses OpenClaw's existing session isolation properly.
+
+For Telegram specifically, BotFather has a setting for this now. Open BotFather, choose your bot from **My bots**, go to **Bot Settings**, and turn on **Threaded Mode**.
+
+<p align="center">
+  <img src="./tips/mem-05/telegram-1.png" alt="Open BotFather and choose your bot from My bots" width="30%" />
+  <img src="./tips/mem-05/telegram-2.png" alt="Enable Threaded Mode in Bot Settings" width="30%" />
+  <img src="./tips/mem-05/telegram-3.png" alt="Telegram chat using separate topic tabs" width="34%" />
+</p>
+
+Once it is enabled, Telegram gives the bot separate tabs/topics in the chat UI. That is exactly what this tip needs - coding in one topic, research in another, admin in another - instead of one mixed transcript where everything contaminates everything else.
+
+### TEL-04: Give OpenClaw its own Telegram topic for fast admin work
 
 If OpenClaw config changes, repo checks, cron issues, and bot maintenance all happen in the same general chat, operational work gets mixed into everything else. A dedicated Telegram topic with its own `systemPrompt` gives OpenClaw a standing admin lane for config review, source inspection, and safe git follow-up.
 
@@ -521,144 +541,7 @@ Then show me:
 
 </details>
 
-### MEM-05: Split conversations into threads so context stops bleeding across topics
-
-One long OpenClaw conversation turns into a junk drawer. Coding, research, admin, and random questions all get mixed together, and every new turn drags that baggage forward.
-
-OpenClaw already has session boundaries you can use. Group chats isolate state by group. Telegram forum topics get their own `:topic:<threadId>` session keys. Slack and Discord threads are treated as thread sessions. Discord channels also get their own isolated sessions.
-
-That means the practical fix is simple: split work by topic or channel. Keep one thread for coding, another for research, another for admin, another for personal operations. Focused threads give the agent focused context instead of one huge mixed transcript.
-
-This is one of the easiest memory fixes because it does not require a new memory system. It just uses OpenClaw's existing session isolation properly.
-
-For Telegram specifically, BotFather has a setting for this now. Open BotFather, choose your bot from **My bots**, go to **Bot Settings**, and turn on **Threaded Mode**.
-
-<p align="center">
-  <img src="./tips/mem-05/telegram-1.png" alt="Open BotFather and choose your bot from My bots" width="30%" />
-  <img src="./tips/mem-05/telegram-2.png" alt="Enable Threaded Mode in Bot Settings" width="30%" />
-  <img src="./tips/mem-05/telegram-3.png" alt="Telegram chat using separate topic tabs" width="34%" />
-</p>
-
-Once it is enabled, Telegram gives the bot separate tabs/topics in the chat UI. That is exactly what this tip needs - coding in one topic, research in another, admin in another - instead of one mixed transcript where everything contaminates everything else.
-
-### MEM-06: Make the workspace folder the source of truth and put it under git
-
-`AGENTS.md`, `SOUL.md`, `TOOLS.md`, `IDENTITY.md`, `USER.md`, `HEARTBEAT.md`, `MEMORY.md`, and `memory/` are not loose notes. They are operating state.
-
-OpenClaw's own docs recommend treating the workspace as private memory and putting it in a private git repo. That gives you backup, diff, and a clean way to see when a prompt, memory file, or operating rule changed.
-
-The practical setup is simple:
-
-```bash
-git init
-git add AGENTS.md SOUL.md TOOLS.md IDENTITY.md USER.md HEARTBEAT.md MEMORY.md memory/
-git commit -m "Add agent workspace"
-```
-
-If you use GitHub or GitLab, make the repo private and push it there. If git is installed, brand-new OpenClaw workspaces can even auto-initialize, which tells you this is not a weird custom pattern - it is a normal way to treat the workspace.
-
-This pairs naturally with `MEM-04`. If the workspace is the source of truth, git is how you keep that source of truth recoverable.
-
-<details>
-<summary><strong>Copy prompt - implement this tip for me</strong></summary>
-
-```md
-Set up my OpenClaw workspace as a private git-backed source of truth.
-
-Do all of the following:
-
-1. Check whether my OpenClaw workspace is already a git repo.
-2. If it is not, initialize git in the workspace.
-3. Add the main OpenClaw workspace files when present, including:
-   - `AGENTS.md`
-   - `SOUL.md`
-   - `TOOLS.md`
-   - `IDENTITY.md`
-   - `USER.md`
-   - `HEARTBEAT.md`
-   - `MEMORY.md`
-   - `memory/`
-4. Create an initial commit if one does not already exist.
-5. If a `.gitignore` is needed for local noise, add a minimal one.
-6. If a remote is already configured, show it.
-7. If no remote exists and GitHub CLI (`gh`) is installed and authenticated, create a new private GitHub repo automatically, prefer a name like `openclaw-workspace-<bot-name>`, add `origin`, and push.
-8. If `gh` is not available or not authenticated, do not fail vaguely - tell me the exact manual commands to create a private repo with a sensible name like `openclaw-workspace-<bot-name>`, add `origin`, and push.
-
-Then show me:
-- whether the workspace was already under git
-- what files were added to version control
-- the exact commit you created, if any
-- whether you created and pushed a private remote automatically
-- if not, the exact commands I should run next
-```
-
-</details>
-
-### MEM-07: Back up your workspace continuously, not just once
-
-`git init` is not the backup. The backup only becomes real once you keep pushing updates.
-
-OpenClaw's workspace docs already show the ongoing loop:
-
-```bash
-git status
-git add .
-git commit -m "Update memory"
-git push
-```
-
-That is the habit to build. Prompts change. `MEMORY.md` changes. `memory/` changes. If the private repo only got the first commit and never gets the later updates, it is not really your source of truth backup.
-
-The practical version is simple: put the backup policy in `AGENTS.md`, then run it from a dedicated cron. `AGENTS.md` should define what counts as a meaningful change. The cron should do the actual check and sync. This does not belong in `HEARTBEAT.md` - heartbeat is for health checks, not workspace maintenance.
-
-Commit and push on meaningful workspace changes, not every tiny edit. Good triggers are prompt updates, new durable memories, workflow changes, or anything in the workspace that you would hate to lose.
-
-For example:
-
-```bash
-openclaw cron create \
-  --name workspace-backup-check \
-  --cron "0 21 * * *" \
-  --message "Check the workspace git repo. If meaningful workspace files changed, commit and push them. Skip trivial noise. Never commit secrets or anything under ~/.openclaw/. Report what happened."
-```
-
-<p align="center">
-  <img src="./tips/mem-07/workspace-backup-check.png" alt="OpenClaw cron job configured for workspace backup checks" width="100%" />
-</p>
-
-<details>
-<summary><strong>Copy prompt - implement this tip for me</strong></summary>
-
-```md
-Set up a practical ongoing backup workflow for my OpenClaw workspace repo so updates keep getting pushed after the initial setup.
-
-Do all of the following:
-
-1. Check whether my OpenClaw workspace already has a git remote configured.
-2. Show me the exact files or folders in the workspace that should be treated as backup-worthy operating state.
-3. Add a short rule to `AGENTS.md` explaining that workspace changes should be committed and pushed on meaningful changes, not every tiny edit.
-4. Set this up as a dedicated cron or scheduled backup check, not as a heartbeat task.
-5. If there is already a good place for a scheduled backup rule, reuse it instead of inventing a second system.
-6. Include the standard ongoing sync commands:
-   - `git status`
-   - `git add .`
-   - `git commit -m "Update memory"`
-   - `git push`
-7. Add a short warning not to commit secrets, tokens, passwords, or anything under `~/.openclaw/`.
-8. If you see a simple safe way to automate reminders without blindly auto-pushing, suggest it.
-
-Then show me:
-- whether a remote is already configured
-- what counts as backup-worthy workspace state
-- the exact `AGENTS.md` rule you added
-- how the dedicated cron or scheduled check should run
-- the exact ongoing sync commands
-- the secret-safety warning you added
-```
-
-</details>
-
-### MEM-08: Periodically self-clean memory instead of letting it rot forever
+### MEM-05: Periodically self-clean memory instead of letting it rot forever
 
 Memory quality depends on what gets removed as much as what gets added.
 
@@ -720,77 +603,6 @@ Then show me:
 - any contradictions or stale entries you found
 - the exact `HEARTBEAT.md` rule you added
 - whether you used heartbeat or recommended cron instead
-```
-
-</details>
-
-### MEM-09: Delete the old session on `/new` so resets do not leave junk behind
-
-`/new` starts a fresh session, but that does not automatically mean the old session record and transcript disappear from disk. If you reset often, old sessions can keep accumulating in `sessions.json` and the `sessions/` folder even though the live chat already moved on.
-
-OpenClaw internal hooks are enough to clean this up. Turn on the built-in hook entry and add a handler at `hooks/delete-session-on-new/handler.ts` that removes the previous session entry when `/new` runs. If you still want a recovery path, archive the transcript instead of hard-deleting it.
-
-Turn on the hook like this:
-
-```json5
-{
-  hooks: {
-    internal: {
-      enabled: true,
-      entries: {
-        "delete-session-on-new": {
-          enabled: true
-        }
-      }
-    }
-  }
-}
-```
-
-This repo includes a working example handler in `tips/mem-09/handler.ts`.
-
-The practical behavior is:
-
-- intercept `/new`
-- find the previous session entry being reset
-- remove that session key from `sessions/sessions.json`
-- move the transcript into `sessions/archive/` instead of losing it completely
-
-That keeps `/new` closer to what many people expect: a real reset for live work, without silently growing stale session state forever.
-
-<details>
-<summary><strong>Copy prompt - implement this tip for me</strong></summary>
-
-```md
-Review my OpenClaw setup and make `/new` clean up the previous session instead of letting old session records pile up.
-
-Use this helper file from this repo:
-- `tips/mem-09/handler.ts`
-
-If needed, fetch it directly from:
-- https://raw.githubusercontent.com/alvinunreal/awesome-openclaw-tips/main/tips/mem-09/handler.ts
-
-Do all of the following:
-
-1. Find the active OpenClaw config file actually used by this runtime.
-2. Check whether `hooks.internal` is already enabled.
-3. Enable this hook entry without overwriting unrelated hook settings:
-   - `hooks.internal.enabled = true`
-   - `hooks.internal.entries.delete-session-on-new.enabled = true`
-4. Create or update `hooks/delete-session-on-new/handler.ts` using the helper file.
-5. Make sure the handler only runs for the `/new` command.
-6. Make sure it removes the previous session entry, not the fresh replacement session.
-7. Archive the old transcript into `sessions/archive/` instead of hard-deleting it, unless I explicitly want permanent deletion.
-8. Test the behavior if possible by creating a fresh session, running `/new`, and confirming the old session entry no longer remains active in the session store.
-9. Do not claim success unless you verified that the old session was cleaned up or clearly explain what blocked verification.
-
-Then show me:
-- which config file you changed
-- the exact hook config block before and after
-- whether `hooks/delete-session-on-new/handler.ts` was created or updated
-- whether the old session was deleted from the session store
-- whether the transcript was archived or deleted
-- any assumptions you made
 ```
 
 </details>
@@ -1279,7 +1091,60 @@ Then show me:
 
 </details>
 
-### OPS-02: Learn the slash commands that actually save bad sessions
+### OPS-02: Make the workspace folder the source of truth and put it under git
+
+`AGENTS.md`, `SOUL.md`, `TOOLS.md`, `IDENTITY.md`, `USER.md`, `HEARTBEAT.md`, `MEMORY.md`, and `memory/` are not loose notes. They are operating state.
+
+OpenClaw's own docs recommend treating the workspace as private memory and putting it in a private git repo. That gives you backup, diff, and a clean way to see when a prompt, memory file, or operating rule changed.
+
+The practical setup is simple:
+
+```bash
+git init
+git add AGENTS.md SOUL.md TOOLS.md IDENTITY.md USER.md HEARTBEAT.md MEMORY.md memory/
+git commit -m "Add agent workspace"
+```
+
+If you use GitHub or GitLab, make the repo private and push it there. If git is installed, brand-new OpenClaw workspaces can even auto-initialize, which tells you this is not a weird custom pattern - it is a normal way to treat the workspace.
+
+This pairs naturally with `MEM-04`. If the workspace is the source of truth, git is how you keep that source of truth recoverable.
+
+<details>
+<summary><strong>Copy prompt - implement this tip for me</strong></summary>
+
+```md
+Set up my OpenClaw workspace as a private git-backed source of truth.
+
+Do all of the following:
+
+1. Check whether my OpenClaw workspace is already a git repo.
+2. If it is not, initialize git in the workspace.
+3. Add the main OpenClaw workspace files when present, including:
+   - `AGENTS.md`
+   - `SOUL.md`
+   - `TOOLS.md`
+   - `IDENTITY.md`
+   - `USER.md`
+   - `HEARTBEAT.md`
+   - `MEMORY.md`
+   - `memory/`
+4. Create an initial commit if one does not already exist.
+5. If a `.gitignore` is needed for local noise, add a minimal one.
+6. If a remote is already configured, show it.
+7. If no remote exists and GitHub CLI (`gh`) is installed and authenticated, create a new private GitHub repo automatically, prefer a name like `openclaw-workspace-<bot-name>`, add `origin`, and push.
+8. If `gh` is not available or not authenticated, do not fail vaguely - tell me the exact manual commands to create a private repo with a sensible name like `openclaw-workspace-<bot-name>`, add `origin`, and push.
+
+Then show me:
+- whether the workspace was already under git
+- what files were added to version control
+- the exact commit you created, if any
+- whether you created and pushed a private remote automatically
+- if not, the exact commands I should run next
+```
+
+</details>
+
+### OPS-03: Learn the slash commands that actually save bad sessions
 
 When a session gets slow, bloated, or confused, the fix is often not another long prompt. OpenClaw already has slash commands for resetting, inspecting, stopping, compacting, switching models, and managing subagents.
 
@@ -1313,6 +1178,77 @@ Then show me:
 - which file you added the cheat sheet to
 - the exact cheat-sheet section
 - which commands were available in my setup
+- any assumptions you made
+```
+
+</details>
+
+### OPS-04: Delete the old session on `/new` so resets do not leave junk behind
+
+`/new` starts a fresh session, but that does not automatically mean the old session record and transcript disappear from disk. If you reset often, old sessions can keep accumulating in `sessions.json` and the `sessions/` folder even though the live chat already moved on.
+
+OpenClaw internal hooks are enough to clean this up. Turn on the built-in hook entry and add a handler at `hooks/delete-session-on-new/handler.ts` that removes the previous session entry when `/new` runs. If you still want a recovery path, archive the transcript instead of hard-deleting it.
+
+Turn on the hook like this:
+
+```json5
+{
+  hooks: {
+    internal: {
+      enabled: true,
+      entries: {
+        "delete-session-on-new": {
+          enabled: true
+        }
+      }
+    }
+  }
+}
+```
+
+This repo includes a working example handler in `tips/mem-09/handler.ts`.
+
+The practical behavior is:
+
+- intercept `/new`
+- find the previous session entry being reset
+- remove that session key from `sessions/sessions.json`
+- move the transcript into `sessions/archive/` instead of losing it completely
+
+That keeps `/new` closer to what many people expect: a real reset for live work, without silently growing stale session state forever.
+
+<details>
+<summary><strong>Copy prompt - implement this tip for me</strong></summary>
+
+```md
+Review my OpenClaw setup and make `/new` clean up the previous session instead of letting old session records pile up.
+
+Use this helper file from this repo:
+- `tips/mem-09/handler.ts`
+
+If needed, fetch it directly from:
+- https://raw.githubusercontent.com/alvinunreal/awesome-openclaw-tips/main/tips/mem-09/handler.ts
+
+Do all of the following:
+
+1. Find the active OpenClaw config file actually used by this runtime.
+2. Check whether `hooks.internal` is already enabled.
+3. Enable this hook entry without overwriting unrelated hook settings:
+   - `hooks.internal.enabled = true`
+   - `hooks.internal.entries.delete-session-on-new.enabled = true`
+4. Create or update `hooks/delete-session-on-new/handler.ts` using the helper file.
+5. Make sure the handler only runs for the `/new` command.
+6. Make sure it removes the previous session entry, not the fresh replacement session.
+7. Archive the old transcript into `sessions/archive/` instead of hard-deleting it, unless I explicitly want permanent deletion.
+8. Test the behavior if possible by creating a fresh session, running `/new`, and confirming the old session entry no longer remains active in the session store.
+9. Do not claim success unless you verified that the old session was cleaned up or clearly explain what blocked verification.
+
+Then show me:
+- which config file you changed
+- the exact hook config block before and after
+- whether `hooks/delete-session-on-new/handler.ts` was created or updated
+- whether the old session was deleted from the session store
+- whether the transcript was archived or deleted
 - any assumptions you made
 ```
 
@@ -1365,6 +1301,115 @@ Then show me:
 - the exact scheduled prompt before and after
 - what logic now lives in the standing order vs the cron job
 - any assumptions you made
+```
+
+</details>
+
+### AUTO-02: Use isolated cron jobs for noisy chores
+
+Some scheduled jobs do not belong in your main chat history. Frequent background chores like inbox cleanup, status polling, or routine maintenance can create noise if they keep waking the main session.
+
+OpenClaw supports isolated cron jobs for exactly this case. Isolated jobs run in a dedicated cron session instead of the main session, start with a fresh session id by default, and can announce a summary without dragging the full chore history into your main conversation.
+
+Use isolated jobs when the work is noisy, frequent, or mostly background:
+
+```bash
+openclaw cron add \
+  --name "Inbox cleanup" \
+  --cron "*/15 * * * *" \
+  --session isolated \
+  --message "Clean up routine inbox noise and report only anything actionable." \
+  --announce
+```
+
+This keeps the recurring job in its own `cron:<jobId>` session. It is a better fit than a main-session job when the task should stay in the background and only surface a useful summary.
+
+<details>
+<summary><strong>Copy prompt - implement this tip for me</strong></summary>
+
+```md
+Review my OpenClaw cron jobs and move noisy background chores to isolated cron sessions when they should not pollute the main session history.
+
+Do all of the following:
+
+1. Find my current OpenClaw cron jobs.
+2. Identify any scheduled jobs that are noisy, frequent, or mostly background work.
+3. Check whether those jobs currently run in the main session instead of isolated cron sessions.
+4. For jobs that should stay out of the main chat history, convert them to isolated cron jobs.
+5. Keep or set delivery behavior appropriately so I still get useful summaries when needed.
+6. Explain which jobs should stay main-session and which should be isolated.
+7. Preserve existing schedules unless there is a clear problem.
+
+Then show me:
+- which cron jobs you reviewed
+- which jobs you moved to isolated sessions
+- the exact cron job config or command before and after
+- what delivery behavior each isolated job will use
+- any assumptions you made
+```
+
+</details>
+
+### AUTO-03: Back up your workspace continuously, not just once
+
+`git init` is not the backup. The backup only becomes real once you keep pushing updates.
+
+OpenClaw's workspace docs already show the ongoing loop:
+
+```bash
+git status
+git add .
+git commit -m "Update memory"
+git push
+```
+
+That is the habit to build. Prompts change. `MEMORY.md` changes. `memory/` changes. If the private repo only got the first commit and never gets the later updates, it is not really your source of truth backup.
+
+The practical version is simple: put the backup policy in `AGENTS.md`, then run it from a dedicated cron. `AGENTS.md` should define what counts as a meaningful change. The cron should do the actual check and sync. This does not belong in `HEARTBEAT.md` - heartbeat is for health checks, not workspace maintenance.
+
+Commit and push on meaningful workspace changes, not every tiny edit. Good triggers are prompt updates, new durable memories, workflow changes, or anything in the workspace that you would hate to lose.
+
+For example:
+
+```bash
+openclaw cron create \
+  --name workspace-backup-check \
+  --cron "0 21 * * *" \
+  --message "Check the workspace git repo. If meaningful workspace files changed, commit and push them. Skip trivial noise. Never commit secrets or anything under ~/.openclaw/. Report what happened."
+```
+
+<p align="center">
+  <img src="./tips/mem-07/workspace-backup-check.png" alt="OpenClaw cron job configured for workspace backup checks" width="100%" />
+</p>
+
+<details>
+<summary><strong>Copy prompt - implement this tip for me</strong></summary>
+
+```md
+Set up a practical ongoing backup workflow for my OpenClaw workspace repo so updates keep getting pushed after the initial setup.
+
+Do all of the following:
+
+1. Check whether my OpenClaw workspace already has a git remote configured.
+2. Show me the exact files or folders in the workspace that should be treated as backup-worthy operating state.
+3. Add a short rule to `AGENTS.md` explaining that workspace changes should be committed and pushed on meaningful changes, not every tiny edit.
+4. Set this up as a dedicated cron or scheduled backup check, not as a heartbeat task.
+5. If there is already a good place for a scheduled backup rule, reuse it instead of inventing a second system.
+6. Include the standard ongoing sync commands:
+   - `git status`
+   - `git add .`
+   - `git commit -m "Update memory"`
+   - `git push`
+7. Add a short warning not to commit secrets, tokens, passwords, or anything under `~/.openclaw/`.
+8. If you see a simple safe way to automate reminders without blindly auto-pushing, suggest it.
+
+Then show me:
+- whether a remote is already configured
+- what counts as backup-worthy workspace state
+- the exact `AGENTS.md` rule you added
+- how the dedicated cron or scheduled check should run
+- the exact ongoing sync commands
+- the secret-safety warning you added
 ```
 
 </details>
@@ -1567,52 +1612,6 @@ Then show me:
 ```
 
 </details>
-
-### AUTO-02: Use isolated cron jobs for noisy chores
-
-Some scheduled jobs do not belong in your main chat history. Frequent background chores like inbox cleanup, status polling, or routine maintenance can create noise if they keep waking the main session.
-
-OpenClaw supports isolated cron jobs for exactly this case. Isolated jobs run in a dedicated cron session instead of the main session, start with a fresh session id by default, and can announce a summary without dragging the full chore history into your main conversation.
-
-Use isolated jobs when the work is noisy, frequent, or mostly background:
-
-```bash
-openclaw cron add \
-  --name "Inbox cleanup" \
-  --cron "*/15 * * * *" \
-  --session isolated \
-  --message "Clean up routine inbox noise and report only anything actionable." \
-  --announce
-```
-
-This keeps the recurring job in its own `cron:<jobId>` session. It is a better fit than a main-session job when the task should stay in the background and only surface a useful summary.
-
-<details>
-<summary><strong>Copy prompt - implement this tip for me</strong></summary>
-
-```md
-Review my OpenClaw cron jobs and move noisy background chores to isolated cron sessions when they should not pollute the main session history.
-
-Do all of the following:
-
-1. Find my current OpenClaw cron jobs.
-2. Identify any scheduled jobs that are noisy, frequent, or mostly background work.
-3. Check whether those jobs currently run in the main session instead of isolated cron sessions.
-4. For jobs that should stay out of the main chat history, convert them to isolated cron jobs.
-5. Keep or set delivery behavior appropriately so I still get useful summaries when needed.
-6. Explain which jobs should stay main-session and which should be isolated.
-7. Preserve existing schedules unless there is a clear problem.
-
-Then show me:
-- which cron jobs you reviewed
-- which jobs you moved to isolated sessions
-- the exact cron job config or command before and after
-- what delivery behavior each isolated job will use
-- any assumptions you made
-```
-
-</details>
-
 
 ## Acknowledgements
 
