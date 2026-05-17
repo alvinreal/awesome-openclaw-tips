@@ -47,6 +47,7 @@
   - [OPS-02: Make the workspace folder the source of truth and put it under git](#ops-02-make-the-workspace-folder-the-source-of-truth-and-put-it-under-git)
   - [OPS-03: Learn the slash commands that actually save bad sessions](#ops-03-learn-the-slash-commands-that-actually-save-bad-sessions)
   - [OPS-04: Delete the old session on /new so resets do not leave junk behind](#ops-04-delete-the-old-session-on-new-so-resets-do-not-leave-junk-behind)
+  - [OPS-05: Add optional plugin tools with tools.alsoAllow](#ops-05-add-optional-plugin-tools-with-toolsalsoallow)
 - [⏱️ Automation](#automation)
   - [AUTO-01: Standing orders define what, cron defines when](#auto-01-standing-orders-define-what-cron-defines-when)
   - [AUTO-02: Use isolated cron jobs for noisy chores](#auto-02-use-isolated-cron-jobs-for-noisy-chores)
@@ -1249,6 +1250,64 @@ Then show me:
 - whether the old session was deleted from the session store
 - whether the transcript was archived or deleted
 - any assumptions you made
+```
+
+</details>
+
+### OPS-05: Add optional plugin tools with `tools.alsoAllow`
+
+Optional plugin tools can be installed and still stay invisible to the agent if the tool policy does not include them. The common mistake is setting `tools.allow` to only the new tool name. That switches the setup into restrictive allowlist mode and can remove normal profile tools you expected to keep.
+
+OpenClaw's tool policy has an additive option for this case: `tools.alsoAllow`. It lets you keep the normal profile and add only the optional plugin tools you want.
+
+For example, a coding-profile setup that installs TweetClaw can keep the usual coding tools and add the two TweetClaw tools like this:
+
+```json5
+{
+  tools: {
+    profile: "coding",
+    alsoAllow: ["explore", "tweetclaw"]
+  }
+}
+```
+
+Use `tools.allow` when you intentionally want a strict allowlist. Use `tools.alsoAllow` when the goal is "keep my normal profile, plus this plugin tool."
+
+After changing the config, verify both sides:
+
+```bash
+openclaw plugins inspect tweetclaw --runtime
+openclaw config get tools
+```
+
+The first command checks that the plugin registered its tools. The second command checks whether your active policy can expose them to the agent.
+
+<details>
+<summary><strong>Copy prompt - implement this tip for me</strong></summary>
+
+```md
+Review my OpenClaw tool policy and add optional plugin tools without breaking the normal tool profile.
+
+Do all of the following:
+
+1. Find the active OpenClaw config file actually used by this runtime.
+2. Check `tools.profile`, `tools.allow`, `tools.alsoAllow`, and `tools.deny`.
+3. Check whether I am trying to enable any optional plugin tools, such as `explore` and `tweetclaw` for TweetClaw.
+4. If I want to keep the normal profile and add plugin tools, use `tools.alsoAllow` instead of replacing the profile with `tools.allow`.
+5. Preserve existing `tools.profile` and unrelated tool settings.
+6. Only use `tools.allow` if I explicitly want strict allowlist mode.
+7. If the plugin has per-agent config, also check `agents.list[].tools.alsoAllow` for that agent.
+8. Verify the plugin runtime registration with `openclaw plugins inspect <plugin-id> --runtime` when possible.
+9. Verify the effective config with `openclaw config get tools`.
+10. If a tool is still missing, report whether the problem is plugin registration, config policy, or a stale gateway that needs restart.
+
+Then show me:
+- which config file you changed
+- the tool policy before and after
+- which optional plugin tools were added
+- whether `tools.allow` was left alone or changed
+- whether runtime inspection found the plugin tools
+- any restart or reinstall step that is still needed
 ```
 
 </details>
