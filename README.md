@@ -32,6 +32,7 @@
   - [MEM-03: Use SQLite memory search before you pay for embeddings](#mem-03-use-sqlite-memory-search-before-you-pay-for-embeddings)
   - [MEM-04: Treat chat history as cache, not the source of truth](#mem-04-treat-chat-history-as-cache-not-the-source-of-truth)
   - [MEM-05: Periodically self-clean memory instead of letting it rot forever](#mem-05-periodically-self-clean-memory-instead-of-letting-it-rot-forever)
+  - [MEM-06: Try a zero-dependency local memory engine before you pay for embeddings](#mem-06-try-a-zero-dependency-local-memory-engine-before-you-pay-for-embeddings)
 - [🛡️ Reliability](#reliability)
   - [REL-01: Don't put all your fallbacks on the same provider](#rel-01-dont-put-all-your-fallbacks-on-the-same-provider)
   - [REL-02: Your agent says "done" when it isn't](#rel-02-your-agent-says-done-when-it-isnt)
@@ -606,6 +607,20 @@ Then show me:
 ```
 
 </details>
+
+### MEM-06: Try a zero-dependency local memory engine before you pay for embeddings
+
+MEM-03 says to use SQLite memory search before paying for embeddings. The next step is dropping external dependencies entirely.
+
+[Mnemosyne](https://github.com/ElonAug7/openclaw-mnemosyne-memory-engine) is a zero-dependency local memory engine for OpenClaw: 271KB runtime, no LLM API, no vector DB, no Docker. Memories live as plain Markdown files (Git-friendly, `git diff`-able), retrieval runs on local TF-IDF + KNN at ~55ms with zero token cost, and a 7-way parallel pipeline (semantic, keyword, temporal, profile, heartbeat, decision, todo) plus a built-in Web UI at localhost:8766 covers the whole loop — fully offline, MIT licensed.
+
+Why it fits this playbook:
+
+- It follows MEM-02 / MEM-05's "workspace under git" model — memory stays human-readable and reviewable.
+- It follows MEM-03's "don't pay for embeddings" rule — search is local TF-IDF + KNN, not a paid embedding API.
+- It keeps heartbeat-driven memory maintenance (MEM-05) at $0.00 per recall.
+
+Start here if you want a drop-in, local-first memory layer; keep paid embedding search only for corpora that truly need cross-lingual semantic recall.
 
 <a id="reliability"></a>
 
